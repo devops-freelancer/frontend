@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: {{ .Values.namespace}}
+  labels:
+    role: {{ .Values.role}}
+    version: {{ .Values.version }}
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 25%
+  selector:
+    matchLabels:
+      role: {{ .Values.role}}
+      version: {{ .Values.version }}
+  template:
+    metadata:
+      labels:
+        role: {{ .Values.role}}
+        version: {{ .Values.version }}
+    spec:
+      containers:
+      - name: frontend
+        image: {{ .Values.image}}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: {{ .Values.containerport}}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.containerport}}
+          initialDelaySeconds: 2
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+             path: /
+             port: {{ .Values.containerport}}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 1
